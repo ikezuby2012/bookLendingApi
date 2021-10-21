@@ -1,0 +1,21 @@
+{
+  "name": "bookapi",
+  "version": "1.0.0",
+  "description": "an api for book lending service",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "server": "nodemon app.js"
+  },
+  "keywords": [
+    "genesys"
+  ],
+  "author": "mr zuby",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.14"
+  },
+  "dependencies": {
+    "validator": "^13.6.0"
+  }
+}
