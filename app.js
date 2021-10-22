@@ -5,11 +5,6 @@ const { StringDecoder } = require('string_decoder');
 const routeHandler = require("./utils/routeHandler");
 
 const server = http.createServer((req, res) => {
-    // const { pathname, query } = url.parse(req.url, true);
-    // const method = req.method.toLowerCase();
-    // const path = pathname.replace(/^\/+|\/+$/g, "");
-    // const { headers } = req;
-
     let parsedURL = url.parse(req.url, true);
     let path = parsedURL.pathname;
 
