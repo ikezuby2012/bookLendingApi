@@ -170,7 +170,7 @@ routeHandler._users.post = (data, callback) => {
     if (checkMail) {
         callback(400, { message: "user already exist!" });
     }
-    if (name && email && password && role) {
+    if (name && email && password && role && checkMail == false) {
         const newObj = {
             id: newId,
             name,
@@ -220,7 +220,7 @@ routeHandler._lendBook.get = (data, callback) => {
                     data: checkBook
                 });
                 checkBook.no_copies -= 1;
-                borrowedBooks.push(name);
+                borrowedBooks.push(checkBook);
                 fs.writeFile(`${__dirname}/../data/borrowedBooks.json`, JSON.stringify(borrowedBooks), (err) => {
                     if (!err) {
                         callback(201, { message: "operation  successful", data: null });
