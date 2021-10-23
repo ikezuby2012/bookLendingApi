@@ -57,7 +57,7 @@ routeHandler._books.post = (data, callback) => {
     var price = typeof (data.payload.price) === 'string' && !isNaN(parseInt(data.payload.price)) ? data.payload.price : false;
     var author = typeof (data.payload.author) === 'string' && data.payload.author.trim().length > 0 ? data.payload.author : false;;
     var year_published = typeof (data.payload.year_published) === 'string' && !isNaN(parseInt(data.payload.year_published)) ? data.payload.year_published : false;
-    var no_copies = typeof (data.payload.no_copies) === 'string' && !isNaN(parseInt(data.payload.no_copies)) ? data.payload.no_copies : false;
+    var no_copies = typeof (data.payload.no_copies) === 'number' && !isNaN(parseInt(data.payload.no_copies)) ? data.payload.no_copies : false;
     if (name && price && author && year_published && no_copies) {
         const newObj = {
             id: newId,
