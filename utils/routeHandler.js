@@ -231,7 +231,7 @@ routeHandler._lendBook.get = (data, callback) => {
         //check if book exist
         let checkBook = book.find(book => book.name == name);
         let books = book.map(book => {
-            console.log("check book is " + checkBook);
+            // console.log("check book is " + checkBook);
             if (book.id === checkBook.id) {
                 if (checkBook.no_copies > 0) {
                     callback(200, {
@@ -239,7 +239,7 @@ routeHandler._lendBook.get = (data, callback) => {
                         data: checkBook
                     });
                     checkBook.no_copies -= 1;
-                    console.log("no is " + checkBook.no_copies);
+                    // console.log("no is " + checkBook.no_copies);
                 }
             }
             return book;
@@ -253,7 +253,7 @@ routeHandler._lendBook.get = (data, callback) => {
             }
         });
         if (checkBook) {
-            console.log(checkBook);
+            // console.log(checkBook);
             borrowedBooks.push(checkBook);
             fs.writeFile(`${__dirname}/../data/borrowedBooks.json`, JSON.stringify(borrowedBooks), (err) => {
                 if (!err) {
@@ -286,17 +286,18 @@ routeHandler._pawnBook.get = (data, callback) => {
         })
     }
 
-    console.log(data.headers, token);
-    console.log(name);
+    // console.log(data.headers, token);
+    // console.log(name);
+
     //check if token and user exist
     if (token && (users.find(user => user.token == token))) {
         //check if books is in the borrowed books register
         let checkBook = borrowedBooks.find(book => book.name === name);
-        console.log(checkBook);
+        // console.log(checkBook);
         if (checkBook) {
             // if checkBook exist, remove from borrowed books register
             let newBorrowedBooks = borrowedBooks.filter(book => book.name !== checkBook.name);
-            console.log("its working");
+            // console.log("its working");
             fs.writeFile(`${__dirname}/../data/borrowedBooks.json`, JSON.stringify(newBorrowedBooks), (err) => {
                 if (!err) {
                     callback(201, {
@@ -307,7 +308,7 @@ routeHandler._pawnBook.get = (data, callback) => {
                     callback(400, { message: "operation failed!" });
                 }
             });
-            console.log(newBorrowedBooks);
+            // console.log(newBorrowedBooks);
             
             // increment book in the book registry 
             let books = book.map(book => {
@@ -318,7 +319,7 @@ routeHandler._pawnBook.get = (data, callback) => {
                 }
                 return book;
             });
-            console.log("all books " + JSON.stringify(books));
+            // console.log("all books " + JSON.stringify(books));
         } else {
             callback(400, {
                 response: "book not found in the borrowed book registry"

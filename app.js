@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
     let path = parsedURL.pathname;
 
     path = path.replace(/^\/+|\/+$/g, "");
-    console.log(path);
+    // console.log(path);
     let qs = parsedURL.query;
     let headers = req.headers;
     let method = req.method.toLowerCase();
