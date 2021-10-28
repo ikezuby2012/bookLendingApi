@@ -76,6 +76,8 @@ routeHandler._books.post = (data, callback) => {
             }
         });
 
+    } else {
+        callback(400, { message: "operation failed!" });
     }
 }
 
@@ -96,12 +98,14 @@ routeHandler._books.get = (data, callback) => {
             message: "book retrieved",
             data: checkBook
         });
+    } else {
+        callback(400, { message: "book does not exist!" });
     }
 
 }
 
 //method to update a book by id 
-routeHandler._books.patch = (data, callback) => {
+routeHandler._books.put = (data, callback) => {
     const { id } = data.query;
     const { name, price, author, year_published, no_copies } = data.payload;
     id * 1 > book.length
@@ -112,7 +116,7 @@ routeHandler._books.patch = (data, callback) => {
                 message: 'could not update book'
             })
         : null;
-    const books = book.map(el => {
+    let newBook = book.map(el => {
         if (el.id === id) {
             el.name = name;
             el.price = price;
@@ -120,15 +124,18 @@ routeHandler._books.patch = (data, callback) => {
             el.year_published = year_published;
             el.no_copies = no_copies;
         }
-    })
-    if (books) {
-        fs.writeFile(`${__dirname}/../data/books.json`, JSON.stringify(books), (err) => {
+    });
+
+    if (newBook) {
+        fs.writeFile(`${__dirname}/../data/books.json`, JSON.stringify(newBook), (err) => {
             if (!err) {
-                callback(200, { message: "book updated successfully", data: null });
+                callback(200, { message: "book updated successfully", data: book });
             } else {
                 callback(400, { message: "could not add book" });
             }
         });
+    } else {
+        callback(400, { message: "operation failed!" });
     }
 }
 
@@ -136,14 +143,16 @@ routeHandler._books.patch = (data, callback) => {
 routeHandler._books.delete = (data, callback) => {
     const { id } = data.query;
     if (id) {
-        book = book.filter(book => book.id !== id);
-        fs.writeFile(`${__dirname}/../data/books.json`, JSON.stringify(book), (err) => {
+        let newBook = book.filter(book => book.id !== id);
+        fs.writeFile(`${__dirname}/../data/books.json`, JSON.stringify(newBook), (err) => {
             if (!err) {
-                callback(201, { message: "book deleted successfully", data: null })
+                callback(201, { message: "book deleted successfully", data: newBook });
             } else {
                 callback(400, { message: "operation failed!" });
             }
         })
+    } else {
+        callback(400, { message: "operation failed!" });
     }
 }
 
@@ -187,6 +196,8 @@ routeHandler._users.post = (data, callback) => {
                 callback(400, { message: "could not register user" });
             }
         });
+    } else {
+        callback(400, { message: "operation failed!" });
     }
 }
 
@@ -204,33 +215,55 @@ routeHandler._lendBook.get = (data, callback) => {
     const { name } = data.query;
 
     //if token is not a string convert to string
-    token = typeof (token) == "string" ? token : token.toString();
+    if (token) {
+        token = typeof (token) == "string" ? token : token.toString();
+    } else {
+        callback(400, {
+            response: "token was not specified in the headers"
+        })
+    }
+
 
     console.log(data.headers, token);
     console.log(name);
     //check if token and user exist
-    if (token && (users.find(el => el.token == token))) {
+    if (token && (users.find(user => user.token == token))) {
         //check if book exist
-        let checkBook = book.find(el => el.name == name);
-        if (checkBook) {
-            //check if books is available
-            if (checkBook.no_copies > 0) {
-                callback(200, {
-                    response: `${checkBook.name} available for lent`,
-                    data: checkBook
-                });
-                checkBook.no_copies -= 1;
-                borrowedBooks.push(checkBook);
-                fs.writeFile(`${__dirname}/../data/borrowedBooks.json`, JSON.stringify(borrowedBooks), (err) => {
-                    if (!err) {
-                        callback(201, { message: "operation  successful", data: null });
-                    } else {
-                        callback(400, { message: "operation failed!" });
-                    }
-                })
-            } else {
-                callback(400, { message: "could not borrow book" });
+        let checkBook = book.find(book => book.name == name);
+        let books = book.map(book => {
+            console.log("check book is " + checkBook);
+            if (book.id === checkBook.id) {
+                if (checkBook.no_copies > 0) {
+                    callback(200, {
+                        response: `${checkBook.name} available for lent`,
+                        data: checkBook
+                    });
+                    checkBook.no_copies -= 1;
+                    console.log("no is " + checkBook.no_copies);
+                }
             }
+            return book;
+        })
+        console.log("all books " + JSON.stringify(books));
+        fs.writeFile(`${__dirname}/../data/books.json`, JSON.stringify(books), (err) => {
+            if (!err) {
+                callback(201, { message: "operation  successful", data: null });
+            } else {
+                callback(400, { message: "operation failed!" });
+            }
+        });
+        if (checkBook) {
+            console.log(checkBook);
+            borrowedBooks.push(checkBook);
+            fs.writeFile(`${__dirname}/../data/borrowedBooks.json`, JSON.stringify(borrowedBooks), (err) => {
+                if (!err) {
+                    callback(201, { message: "operation  successful", data: null });
+                } else {
+                    callback(400, { message: "operation failed!" });
+                }
+            })
+        } else {
+            callback(400, { message: "could not borrow book" });
         }
     }
 }
@@ -245,35 +278,53 @@ routeHandler._pawnBook.get = (data, callback) => {
     let { token } = data.headers;
     const { name } = data.query;
 
-    //if token is not a string convert to string
-    token = typeof (token) == "string" ? token : token.toString();
+    if (token) {
+        token = typeof (token) == "string" ? token : token.toString();
+    } else {
+        callback(400, {
+            response: "token was not specified in the headers"
+        })
+    }
 
     console.log(data.headers, token);
     console.log(name);
     //check if token and user exist
-    if (token && (users.find(el => el.token == token))) {
-        //check if book exist
-        let checkBook = book.find(el => el.name == name);
+    if (token && (users.find(user => user.token == token))) {
+        //check if books is in the borrowed books register
+        let checkBook = borrowedBooks.find(book => book.name === name);
+        console.log(checkBook);
         if (checkBook) {
-            //check if books is available
-            if (checkBook.no_copies > 0) {
-                callback(200, {
-                    response: `${checkBook.name} pawn successfully`,
-                    data: checkBook
-                });
-                checkBook.no_copies += 1;
-                borrowedBooks = borrowedBooks.filter(book => book.name !== name);
-                fs.writeFile(`${__dirname}/../data/borrowedBooks.json`, JSON.stringify(borrowedBooks), (err) => {
-                    if (!err) {
-                        callback(201, { message: "operation  successful", data: borrowedBooks });
-                    } else {
-                        callback(400, { message: "operation failed!" });
-                    }
-                });
-            } else {
-                callback(400, { message: "could not pawn book" });
-            }
+            // if checkBook exist, remove from borrowed books register
+            let newBorrowedBooks = borrowedBooks.filter(book => book.name !== checkBook.name);
+            console.log("its working");
+            fs.writeFile(`${__dirname}/../data/borrowedBooks.json`, JSON.stringify(newBorrowedBooks), (err) => {
+                if (!err) {
+                    callback(201, {
+                        message: "operation  successful, borrowed books registry --",
+                        data: newBorrowedBooks
+                    });
+                } else {
+                    callback(400, { message: "operation failed!" });
+                }
+            });
+            console.log(newBorrowedBooks);
+            
+            // increment book in the book registry 
+            let books = book.map(book => {
+                console.log("check book is " + checkBook);
+                if (book.id === checkBook.id) {
+                    checkBook.no_copies += 1;
+                    console.log("no is " + checkBook.no_copies);
+                }
+                return book;
+            });
+            console.log("all books " + JSON.stringify(books));
+        } else {
+            callback(400, {
+                response: "book not found in the borrowed book registry"
+            })
         }
+
     }
 }
 

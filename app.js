@@ -26,9 +26,11 @@ const server = http.createServer((req, res) => {
     req.on("end", () => {
         buffer += decoder.end();
 
-        if (req.method === "POST") {
+        if (req.method === "POST" || req.method === "PUT") {
             payload = JSON.parse(buffer);
         }
+
+        // payload = buffer === {} ? buffer : JSON.parse(buffer);
 
         const data = {
             path,
